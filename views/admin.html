@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lily Bot Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-robot text-2xl mr-3"></i>
+                    <h1 class="text-xl font-bold">Lily Bot Admin</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm">Welcome, Admin</span>
+                    <button onclick="logout()" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all duration-200">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-users text-3xl text-blue-500"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Users</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalUsers">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-user-check text-3xl text-green-500"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Active Users</p>
+                        <p class="text-2xl font-bold text-gray-900" id="activeUsers">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-crown text-3xl text-purple-500"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Premium Users</p>
+                        <p class="text-2xl font-bold text-gray-900" id="premiumUsers">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-orange-500">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clock text-3xl text-orange-500"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Pending Payments</p>
+                        <p class="text-2xl font-bold text-gray-900" id="pendingPayments">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="bg-white rounded-xl shadow-lg mb-8">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8 px-6">
+                    <button onclick="showTab('users')" id="usersTab" class="tab-button active py-4 px-1 border-b-2 font-medium text-sm">
+                        <i class="fas fa-users mr-2"></i>Users
+                    </button>
+                    <button onclick="showTab('payments')" id="paymentsTab" class="tab-button py-4 px-1 border-b-2 font-medium text-sm">
+                        <i class="fas fa-credit-card mr-2"></i>Payments
+                    </button>
+                    <button onclick="showTab('analytics')" id="analyticsTab" class="tab-button py-4 px-1 border-b-2 font-medium text-sm">
+                        <i class="fas fa-chart-bar mr-2"></i>Analytics
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="usersContent" class="tab-content p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">User Management</h2>
+                    <div class="flex space-x-4">
+                        <input type="text" id="userSearch" placeholder="Search users..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500">
+                        <button onclick="refreshUsers()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            <i class="fas fa-refresh mr-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Messages</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Referrals</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Premium</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Users will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Payments Tab -->
+            <div id="paymentsContent" class="tab-content p-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Payment Management</h2>
+                    <button onclick="refreshPayments()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-refresh mr-2"></i>Refresh
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">UTR ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tier</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Payments will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="analyticsContent" class="tab-content p-6 hidden">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Analytics</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-4">User Growth</h3>
+                        <canvas id="userGrowthChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-4">Revenue</h3>
+                        <canvas id="revenueChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 class="text-lg font-bold mb-4">Edit User</h3>
+            <form id="editUserForm">
+                <input type="hidden" id="editUserId">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Messages</label>
+                    <input type="number" id="editMessages" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Images</label>
+                    <input type="number" id="editImages" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Premium Status</label>
+                    <select id="editPremium" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500">
+                        <option value="false">No</option>
+                        <option value="true">Yes</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+                    <button type="submit" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'users';
+        let users = [];
+        let payments = [];
+
+        // Tab management
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active', 'border-pink-500', 'text-pink-600');
+                button.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + 'Content').classList.remove('hidden');
+            
+            // Add active class to selected tab
+            const activeTab = document.getElementById(tabName + 'Tab');
+            activeTab.classList.add('active', 'border-pink-500', 'text-pink-600');
+            activeTab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            
+            currentTab = tabName;
+            
+            // Load data for the tab
+            if (tabName === 'users') {
+                loadUsers();
+            } else if (tabName === 'payments') {
+                loadPayments();
+            } else if (tabName === 'analytics') {
+                loadAnalytics();
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/admin/stats');
+                const stats = await response.json();
+                
+                document.getElementById('totalUsers').textContent = stats.total || 0;
+                document.getElementById('activeUsers').textContent = stats.active || 0;
+                document.getElementById('premiumUsers').textContent = stats.premium || 0;
+                document.getElementById('pendingPayments').textContent = stats.pendingPayments || 0;
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Load users
+        async function loadUsers() {
+            try {
+                const response = await fetch('/admin/users');
+                users = await response.json();
+                renderUsersTable();
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        // Render users table
+        function renderUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+            
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.messagesLeft}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.imagesLeft}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.referredUsers}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.premiumStatus ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                            ${user.premiumStatus ? 'Premium' : 'Free'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editUser('${user.id}')" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                        <button onclick="deleteUser('${user.id}')" class="text-red-600 hover:text-red-900">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Load payments
+        async function loadPayments() {
+            try {
+                const response = await fetch('/admin/payments');
+                payments = await response.json();
+                renderPaymentsTable();
+            } catch (error) {
+                console.error('Error loading payments:', error);
+            }
+        }
+
+        // Render payments table
+        function renderPaymentsTable() {
+            const tbody = document.getElementById('paymentsTableBody');
+            tbody.innerHTML = '';
+            
+            payments.forEach(payment => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${payment.id.substring(0, 8)}...</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${payment.userId}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹${payment.amount}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${payment.utrId || 'Not provided'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Tier ${payment.tier}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(payment.status)}">
+                            ${payment.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        ${payment.status === 'pending' ? `
+                            <button onclick="approvePayment('${payment.id}')" class="text-green-600 hover:text-green-900 mr-3">Approve</button>
+                            <button onclick="rejectPayment('${payment.id}')" class="text-red-600 hover:text-red-900">Reject</button>
+                        ` : ''}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function getStatusColor(status) {
+            switch (status) {
+                case 'pending': return 'bg-yellow-100 text-yellow-800';
+                case 'approved': return 'bg-green-100 text-green-800';
+                case 'rejected': return 'bg-red-100 text-red-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        // Edit user
+        function editUser(userId) {
+            const user = users.find(u => u.id == userId);
+            if (user) {
+                document.getElementById('editUserId').value = userId;
+                document.getElementById('editMessages').value = user.messagesLeft;
+                document.getElementById('editImages').value = user.imagesLeft;
+                document.getElementById('editPremium').value = user.premiumStatus.toString();
+                document.getElementById('editUserModal').classList.remove('hidden');
+                document.getElementById('editUserModal').classList.add('flex');
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editUserModal').classList.add('hidden');
+            document.getElementById('editUserModal').classList.remove('flex');
+        }
+
+        // Handle edit user form
+        document.getElementById('editUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const userId = document.getElementById('editUserId').value;
+            const messages = document.getElementById('editMessages').value;
+            const images = document.getElementById('editImages').value;
+            const premium = document.getElementById('editPremium').value === 'true';
+            
+            try {
+                const response = await fetch(`/admin/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        messagesLeft: parseInt(messages),
+                        imagesLeft: parseInt(images),
+                        premiumStatus: premium
+                    })
+                });
+                
+                if (response.ok) {
+                    closeEditModal();
+                    loadUsers();
+                    loadDashboard();
+                }
+            } catch (error) {
+                console.error('Error updating user:', error);
+            }
+        });
+
+        // Approve payment
+        async function approvePayment(paymentId) {
+            try {
+                const response = await fetch(`/admin/payments/${paymentId}/approve`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    loadPayments();
+                    loadDashboard();
+                }
+            } catch (error) {
+                console.error('Error approving payment:', error);
+            }
+        }
+
+        // Reject payment
+        async function rejectPayment(paymentId) {
+            try {
+                const response = await fetch(`/admin/payments/${paymentId}/reject`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    loadPayments();
+                    loadDashboard();
+                }
+            } catch (error) {
+                console.error('Error rejecting payment:', error);
+            }
+        }
+
+        // Refresh functions
+        function refreshUsers() {
+            loadUsers();
+        }
+
+        function refreshPayments() {
+            loadPayments();
+        }
+
+        // Load analytics
+        function loadAnalytics() {
+            // Simple mock charts
+            const ctx1 = document.getElementById('userGrowthChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Users',
+                        data: [12, 19, 3, 5, 2, 3],
+                        borderColor: 'rgb(236, 72, 153)',
+                        tension: 0.1
+                    }]
+                }
+            });
+
+            const ctx2 = document.getElementById('revenueChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: [1200, 1900, 300, 500, 200, 300],
+                        backgroundColor: 'rgba(147, 51, 234, 0.5)'
+                    }]
+                }
+            });
+        }
+
+        // Logout
+        async function logout() {
+            try {
+                await fetch('/admin/logout', { method: 'POST' });
+                window.location.href = '/admin/login';
+            } catch (error) {
+                console.error('Error logging out:', error);
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboard();
+            showTab('users');
+        });
+    </script>
+</body>
+</html>
+
